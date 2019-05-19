@@ -40,54 +40,51 @@ with Ada.Strings.Maps;
 
 use Ada;
 
-package Tokenize is
-   package String_Vectors is
-         new Ada.Containers.Indefinite_Vectors (Index_Type   => Positive,
-                                                Element_Type => String);
+package Tokenize with SPARK_Mode => On is
+--     package String_Vectors is
+--           new Ada.Containers.Indefinite_Vectors (Index_Type   => Positive,
+--                                                  Element_Type => String);
 
-   subtype Token_List is String_Vectors.Vector;
+--     subtype Token_List is String_Vectors.Vector;
    type    Token_Array is array (Positive range <>) of Unbounded_String;
-   use type Token_List;
+--     use type Token_List;
+
 
    --
-   -- Split string To_Be_Splitted in substring separated by
+   -- Split string To_Be_Splitted in substring separated by any character in
    -- Separator.  If Collate_Separator is true consider consecutive
-   -- istances of Separator as a single one
-   --
-   function Split (To_Be_Splitted    : String;
-                   Separator         : Character;
-                   Collate_Separator : Boolean) return Token_List;
-
-
-   --
-   -- Similar to the three-parameter split, but the separator can be
-   -- any character of the set
+   -- istances of Separator as a single one.
    --
    function Split (To_Be_Splitted    : String;
                    Separator         : Ada.Strings.Maps.Character_Set;
-                   Collate_Separator : Boolean) return Token_List;
+                   Collate_Separator : Boolean) return Token_Array
+         with Pre => To_Be_Splitted'Length < Integer'Last-1,
+         Post =>
+               ((To_Be_Splitted = "") <= (Split'Result'Length = 0)),
+               Annotate => (Gnatprove, Terminating);
    --
-   -- Similar to the three-parameter version, but the Separator
-   -- char defaults to the space and Collate_Separator is True
-   -- if Separator is the space, false otherwise
+   -- Synctactic sugar when only a single separator (and not a set) is
+   -- used.
+   --
+   function Split (To_Be_Splitted    : String;
+                   Separator         : Character;
+                   Collate_Separator : Boolean) return Token_Array
+   is (Split (To_Be_Splitted    => To_Be_Splitted,
+              Separator         => Ada.Strings.Maps.To_Set (Separator),
+              Collate_Separator => Collate_Separator))
+         with Post =>
+               ((To_Be_Splitted = "") <= (Split'Result'Length = 0));
+   --
+
+
+   --
+   -- Synctatic sugar with Separator defaulting to the space, with
+   -- Collate_Separator True if Separator is the space, false otherwise
    --
    function Split (To_Be_Splitted : String;
-                   Separator      : Character := ' ') return Token_List;
+                   Separator      : Character := ' ')
+                   return Token_Array
+   is (Split (To_Be_Splitted, Separator, Separator = ' '))
+         with Pre => To_Be_Splitted'Length > 0;
 
-   function Split (To_Be_Splitted : String;
-                   Separator      : Character := ' ') return Token_Array;
-
-   --
-   -- Return the Index-th token
-   --
-   function Element (Container : Token_List;
-                     Index     : Positive) return String
-                    renames String_Vectors.Element;
-
-   --
-   -- Return the number of tokens
-   --
-   function Length (Container : Token_List) return Natural;
-
-   function To_Array (List : Token_List) return Token_Array;
 end Tokenize;
