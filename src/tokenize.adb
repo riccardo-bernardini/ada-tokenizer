@@ -27,35 +27,30 @@ package body Tokenize with SPARK_Mode => On is
       Result : Token_List := Create (To_Be_Splitted'Length);
 
       First : Integer;
-      Restart : Boolean;
    begin
       pragma Assert (Result.Capacity = To_Be_Splitted'Length);
       pragma Assert (Result.Length = 0);
 
-      Restart := False;
       First := To_Be_Splitted'First;
       for Pos in To_Be_Splitted'Range loop
-         if Restart then
-            First := Pos;
-            Restart := False;
-         end if;
-
-         pragma Loop_Invariant (Pos >= First);
+         pragma Assert (Pos >= First);
+         pragma Assert (Result.Length <= Pos - To_Be_Splitted'First);
 
          if Is_In (To_Be_Splitted (Pos), Separator) then
             if First = Pos then
                Result.Append ("");
             else
+               pragma Assert (First < Pos);
+
                Result.Append (To_Be_Splitted (First .. Pos - 1));
             end if;
             pragma Assert (Result.Length <= Pos - To_Be_Splitted'First + 1);
-            Restart := True;
+
+            First := Pos + 1;
          end if;
       end loop;
 
-      pragma Assert (Restart = Is_In (To_Be_Splitted (To_Be_Splitted'Last), Separator));
-
-      if Restart then
+      if First = To_Be_Splitted'Last + 1 then
          -- If I am here, to_be_splitted(to_be_splitted'last) is a separator
          -- That is, the string ends with a terminator.
 
