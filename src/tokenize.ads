@@ -41,13 +41,13 @@ with Ada.Strings.Maps;
 use Ada;
 
 package Tokenize with SPARK_Mode => On is
---     package String_Vectors is
---           new Ada.Containers.Indefinite_Vectors (Index_Type   => Positive,
---                                                  Element_Type => String);
+   --     package String_Vectors is
+   --           new Ada.Containers.Indefinite_Vectors (Index_Type   => Positive,
+   --                                                  Element_Type => String);
 
---     subtype Token_List is String_Vectors.Vector;
+   --     subtype Token_List is String_Vectors.Vector;
    type    Token_Array is array (Positive range <>) of Unbounded_String;
---     use type Token_List;
+   --     use type Token_List;
 
 
    --
@@ -58,10 +58,12 @@ package Tokenize with SPARK_Mode => On is
    function Split (To_Be_Splitted    : String;
                    Separator         : Ada.Strings.Maps.Character_Set;
                    Collate_Separator : Boolean) return Token_Array
-         with Pre => To_Be_Splitted'Length < Integer'Last-1,
+     with
+       Pre =>
+         To_Be_Splitted'Last < Integer'Last - 2,
          Post =>
-               ((To_Be_Splitted = "") <= (Split'Result'Length = 0)),
-               Annotate => (Gnatprove, Terminating);
+           ((To_Be_Splitted = "") <= (Split'Result'Length = 0)),
+           Annotate => (Gnatprove, Terminating);
    --
    -- Synctactic sugar when only a single separator (and not a set) is
    -- used.
@@ -72,8 +74,10 @@ package Tokenize with SPARK_Mode => On is
    is (Split (To_Be_Splitted    => To_Be_Splitted,
               Separator         => Ada.Strings.Maps.To_Set (Separator),
               Collate_Separator => Collate_Separator))
-         with Post =>
-               ((To_Be_Splitted = "") <= (Split'Result'Length = 0));
+     with  Pre =>
+       To_Be_Splitted'Last < Integer'Last - 2,
+       Post =>
+         ((To_Be_Splitted = "") <= (Split'Result'Length = 0));
    --
 
 
@@ -85,6 +89,7 @@ package Tokenize with SPARK_Mode => On is
                    Separator      : Character := ' ')
                    return Token_Array
    is (Split (To_Be_Splitted, Separator, Separator = ' '))
-         with Pre => To_Be_Splitted'Length > 0;
+     with Pre => To_Be_Splitted'Last < Integer'Last - 2;
 
+   Empty_Array : constant Token_Array (1 .. 0) := (others => Null_Unbounded_String);
 end Tokenize;
