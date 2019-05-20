@@ -19,51 +19,47 @@ package body Tokenize with SPARK_Mode => On is
    function Uncollated_Split (To_Be_Splitted : String;
                               Separator      : Ada.Strings.Maps.Character_Set)
                               return Token_List is
-      use Ada.Strings.Maps;
-
       pragma Assert (To_Be_Splitted'Length > 0);
-
 
       Result : Token_List := Create (To_Be_Splitted'Length);
 
-      First : Integer;
-      Restart : Boolean;
+      Current, First : Integer;
    begin
       pragma Assert (Result.Capacity = To_Be_Splitted'Length);
       pragma Assert (Result.Length = 0);
+      Current := To_Be_Splitted'First;
 
-      Restart := False;
-      First := To_Be_Splitted'First;
-      for Pos in To_Be_Splitted'Range loop
-         if Restart then
-            First := Pos;
-            Restart := False;
+      Main_Loop :
+      while Current <= To_Be_Splitted'Last loop
+         pragma Assert (Current >= To_Be_Splitted'First);
+         pragma Loop_Variant (Increases => Current);
+         First := Current;
+
+         Search_For_End :
+         while Current <= To_Be_Splitted'Last and then
+               not Ada.Strings.Maps.Is_In (To_Be_Splitted (Current), Separator) loop
+            Current := Current + 1;
+
+            pragma Loop_Variant (Increases => Current);
+         end loop Search_For_End;
+
+         pragma Assert (Current > To_Be_Splitted'First);
+         pragma Assert (Current - 1 <= To_Be_Splitted'Last);
+         pragma Assert (not Ada.Strings.Maps.Is_In (To_Be_Splitted (Current - 1), Separator));
+
+         Result.Append (To_Unbounded_String (To_Be_Splitted (First .. Current - 1)));
+
+         if (Current = To_Be_Splitted'Last) then
+            -- If I am here, to_be_splitted(current) is a separator
+            -- (since the condition in the while needs to be false)
+            -- This means that the string ends with a terminator.  Since
+            -- in the following I do Current := current +1,  the external
+            -- loop will exit and I would miss the last empty string
+            Result.Append (Null_Unbounded_String);
          end if;
 
-         pragma Loop_Invariant (Pos >= First);
-
-         if Is_In (To_Be_Splitted (Pos), Separator) then
-            if First = Pos then
-               Result.Append ("");
-            else
-               Result.Append (To_Be_Splitted (First .. Pos - 1));
-            end if;
-            pragma Assert (Result.Length <= Pos - To_Be_Splitted'First + 1);
-            Restart := True;
-         end if;
-      end loop;
-
-      pragma Assert (Restart = Is_In (To_Be_Splitted (To_Be_Splitted'Last), Separator));
-
-      if Restart then
-         -- If I am here, to_be_splitted(to_be_splitted'last) is a separator
-         -- That is, the string ends with a terminator.
-
-         Result.Append ("");
-      else
-         Result.Append (To_Be_Splitted (First .. To_Be_Splitted'Last));
-      end if;
-
+         Current := Current + 1;
+      end loop Main_Loop;
 
       return Result;
    end Uncollated_Split;
@@ -79,7 +75,7 @@ package body Tokenize with SPARK_Mode => On is
       Result : Token_List := Create (Tokens.Length);
    begin
       for K in 1 .. Tokens.Length loop
-         if Tokens.Element (K) /= "" then
+         if Tokens.Element (K) /= Null_Unbounded_String then
             Result.Append (Tokens.Element (K));
          end if;
       end loop;
@@ -123,7 +119,7 @@ package body Tokenize with SPARK_Mode => On is
       Result : Token_Array (1 .. List.Length);
    begin
       for I in Result'Range loop
-         Result (I) := To_Unbounded_String (List.Element (I));
+         Result (I) := List.Element (I);
       end loop;
 
       return Result;

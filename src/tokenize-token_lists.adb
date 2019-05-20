@@ -7,14 +7,14 @@ package body Tokenize.Token_Lists with SPARK_Mode => On is
 
    procedure Append
      (List : in out Token_List;
-      What : Unbounded_String)
+      What : String)
    is
    begin
       if List.First_Free > List.Tokens'Last then
          raise Constraint_Error;
       end if;
 
-      List.Tokens (List.First_Free) := What;
+      List.Tokens (List.First_Free) := To_Unbounded_String (What);
       List.First_Free := List.First_Free + 1;
    end Append;
 

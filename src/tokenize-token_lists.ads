@@ -16,14 +16,14 @@ package Tokenize.Token_Lists with SPARK_Mode => On  is
          with Post => Length'Result <= Item.Capacity;
 
    procedure Append (List : in out Token_List;
-                     What : Unbounded_String)
+                     What : String)
          with Pre'Class => List.Length  < List.Capacity,
          Post => List.Length = List.Length'Old + 1
          and List.Capacity = List.Capacity'Old;
 
    function Element (List : Token_List;
                      N    : Positive)
-                     return Unbounded_String
+                     return String
          with Pre'Class => List.Length >= N;
 
 private
@@ -49,6 +49,6 @@ private
 
    function Element (List : Token_List;
                      N    : Positive)
-                     return Unbounded_String
-   is (List.Tokens (N));
+                     return String
+   is (To_String (List.Tokens (N)));
 end Tokenize.Token_Lists;
