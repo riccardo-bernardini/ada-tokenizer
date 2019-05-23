@@ -8,10 +8,10 @@ with Ada.Command_Line;           use Ada;
 procedure Test_Tokenizer is
 
 
-   procedure Print (X : Tokenize.Token_List) is
+   procedure Print (X : Tokenize.Token_Array) is
    begin
       for Item of X loop
-         Put ("[" & Item & "] ");
+         Put ("[" & To_String (Item) & "] ");
       end loop;
    end Print;
 
