@@ -41,14 +41,56 @@ with Ada.Strings.Maps;
 use Ada;
 
 package Tokenize with SPARK_Mode => On is
-   --     package String_Vectors is
-   --           new Ada.Containers.Indefinite_Vectors (Index_Type   => Positive,
-   --                                                  Element_Type => String);
 
-   --     subtype Token_List is String_Vectors.Vector;
    type    Token_Array is array (Positive range <>) of Unbounded_String;
-   --     use type Token_List;
 
+   --
+   -- Collation is considering successive instances of separators as
+   -- one and/or ignoring separators at the beginning or the end of
+   -- the string.  For example, if collation is applied and the separator
+   -- is ';' the string
+   --
+   --         ";foo;;bar;pooh;"
+   --
+   -- will be splitted to
+   --
+   --          "foo", "bar" and "pooh"
+   --
+   -- while if collation is not applied the result will be
+   --
+   --          "", "foo", "", "bar", "pooh" and ""
+   --
+   -- A variable of type Collation_Option controls which kind of
+   -- collation is applied
+   --
+   type Collation_Option is private;
+
+   None   : constant Collation_Option; -- No collation
+   Head   : constant Collation_Option; -- Ignore separators at the beginning
+   Tail   : constant Collation_Option; -- Ignore separators at the end
+   Middle : constant Collation_Option; -- Collate separators in the middle
+   Full   : constant Collation_Option; -- Full collation
+
+   -- Function to combine different collation options.  For example,
+   --
+   --          Head and Tail
+   --
+   -- ignores separators at the beginning and at the end, but does not
+   -- do any collation in the middle, so that the splitting of
+   -- ";foo;;bar;pooh;" would give
+   --
+   --        "foo"   ""    "bar"   and  "pooh"
+   function "and" (X, Y : Collation_Option) return Collation_Option;
+
+   function Split (To_Be_Splitted : String;
+                   Separator      : Ada.Strings.Maps.Character_Set;
+                   Collation      : Collation_Option) return Token_Array
+     with
+       Pre =>
+         To_Be_Splitted'Last < Integer'Last - 2,
+         Post =>
+           (if To_Be_Splitted = "" then Split'Result'Length = 0),
+     Annotate => (Gnatprove, Terminating);
 
    --
    -- Split string To_Be_Splitted in substring separated by any character in
@@ -62,8 +104,10 @@ package Tokenize with SPARK_Mode => On is
        Pre =>
          To_Be_Splitted'Last < Integer'Last - 2,
          Post =>
-           ((To_Be_Splitted = "") <= (Split'Result'Length = 0)),
+           (if To_Be_Splitted = "" then Split'Result'Length = 0),
            Annotate => (Gnatprove, Terminating);
+
+
    --
    -- Synctactic sugar when only a single separator (and not a set) is
    -- used.
@@ -77,8 +121,8 @@ package Tokenize with SPARK_Mode => On is
      with  Pre =>
        To_Be_Splitted'Last < Integer'Last - 2,
        Post =>
-         ((To_Be_Splitted = "") <= (Split'Result'Length = 0));
-   --
+         (if To_Be_Splitted = "" then Split'Result'Length = 0);
+
 
 
    --
@@ -92,4 +136,20 @@ package Tokenize with SPARK_Mode => On is
      with Pre => To_Be_Splitted'Last < Integer'Last - 2;
 
    Empty_Array : constant Token_Array (1 .. 0) := (others => Null_Unbounded_String);
+
+private
+
+   type Basic_Collation_Option is (Ignore_Head, Collate_Middle, Ignore_Tail);
+   type Collation_Option is array (Basic_Collation_Option) of Boolean;
+
+   None        : constant Collation_Option := (others => False);
+   Head        : constant Collation_Option := (Ignore_Head => True, others => False);
+   Tail        : constant Collation_Option := (Ignore_Tail => True, others => False);
+   Middle      : constant Collation_Option := (Collate_Middle => True, others => False);
+   Full        : constant Collation_Option := (others => True);
+
+   function "and" (X, Y : Collation_Option) return Collation_Option
+   is (X or Y);
+
+
 end Tokenize;
