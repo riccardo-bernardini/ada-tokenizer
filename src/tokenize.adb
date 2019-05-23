@@ -26,7 +26,8 @@ package body Tokenize with SPARK_Mode => On is
 
 
    function Collated_Split (To_Be_Splitted : String;
-                            Separator      : Ada.Strings.Maps.Character_Set)
+                            Separator      : Ada.Strings.Maps.Character_Set;
+                            Collation      : Collation_Option)
                             return Token_List
      with
        Pre =>
@@ -100,8 +101,10 @@ package body Tokenize with SPARK_Mode => On is
    --------------------
 
    function Collated_Split (To_Be_Splitted : String;
-                            Separator      : Ada.Strings.Maps.Character_Set)
-                            return Token_List is
+                            Separator      : Ada.Strings.Maps.Character_Set;
+                            Collation      : Collation_Option)
+                            return Token_List
+   is
       Tokens : constant Token_List := Uncollated_Split (To_Be_Splitted, Separator);
       pragma Assert (Tokens.Length <= Token_Lists.List_Length'Last - 1);
       Result : Token_List := Create (Tokens.Length);
@@ -113,7 +116,28 @@ package body Tokenize with SPARK_Mode => On is
          pragma Loop_Invariant (Result.Length <= K - 1);
          pragma Loop_Invariant (Result.Capacity = Result.Capacity'Loop_Entry);
 
-         if Tokens.Element (K) /= "" then
+         if Tokens.Element (K) /= ""
+           or else (if K = 1 then
+                      not Collation (Ignore_Head)
+
+                    elsif K = Tokens.Length then
+                      not Collation (Ignore_Tail)
+
+                    else
+                      not Collation (Collate_Middle))
+             --
+             -- Ugh!  Quite involuted, isn't it?  This is the best
+             -- I have been able to do.  Note that you cannot use
+             --
+             --    (K = 1 and not Collation (Ignore_Head))
+             --    or else (K = tokens.length and not Collation (Ignore_Head))
+             --    or else (Collation (Collate_Middle))
+             --
+             -- since the last alternative would be selected even when
+             -- (for example) K=1 and Collation(Ignore_Head) is True. I cannot
+             -- even use a "case" since the second condition is not static
+             --
+         then
             Result.Append (Tokens.Element (K));
          end if;
       end loop;
@@ -121,12 +145,14 @@ package body Tokenize with SPARK_Mode => On is
       return Result;
    end Collated_Split;
 
+   -----------
+   -- Split --
+   -----------
 
-
-   function Split (To_Be_Splitted    : String;
-                   Separator         : Ada.Strings.Maps.Character_Set;
-                   Collate_Separator : Boolean)
-                   return Token_Array is
+   function Split (To_Be_Splitted : String;
+                   Separator      : Ada.Strings.Maps.Character_Set;
+                   Collation      : Collation_Option) return Token_Array
+   is
    begin
       if To_Be_Splitted'Length = 0 then
          return Empty_Array;
@@ -134,11 +160,24 @@ package body Tokenize with SPARK_Mode => On is
 
       pragma Assert (To_Be_Splitted'Length > 0);
 
-      if (Collate_Separator) then
-         return To_Array (Collated_Split (To_Be_Splitted, Separator));
-      else
-         return To_Array (Uncollated_Split (To_Be_Splitted, Separator));
-      end if;
+      return To_Array (Collated_Split (To_Be_Splitted, Separator, Collation));
+   end Split;
+
+
+
+   -----------
+   -- Split --
+   -----------
+
+   function Split (To_Be_Splitted    : String;
+                   Separator         : Ada.Strings.Maps.Character_Set;
+                   Collate_Separator : Boolean)
+                   return Token_Array is
+   begin
+      return Split
+        (To_Be_Splitted => To_Be_Splitted,
+         Separator      => Separator,
+         Collation      => (if Collate_Separator then Full else None));
    end Split;
 
    --     -----------
