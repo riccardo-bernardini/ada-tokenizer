@@ -2,3 +2,4 @@ obj/*.[^@]*
 obj/gnatprove/*
 obj/gnatprove
 obj/test_tokenizer
+lib/[^.]*
