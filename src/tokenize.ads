@@ -32,13 +32,11 @@
 --   Split("Hello::there", ':')           returns "Hello", "" and "there"
 --   Split("Hello::there", ':', True)     returns "Hello" and "there"
 --
-with Ada.Containers.Indefinite_Vectors;
 with Ada.Strings.Unbounded;
 use  Ada.Strings.Unbounded;
 
 with Ada.Strings.Maps;
 
-use Ada;
 
 package Tokenize with SPARK_Mode => On is
 

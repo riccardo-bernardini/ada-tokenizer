@@ -8,7 +8,7 @@ library project Tokenizer is
    end Ide;
 
    package Compiler is
-      for Switches ("ada") use ("-gnata", "-g");
+      for Switches ("ada") use ("-gnata", "-g", "-gnatwa");
    end Compiler;
 
    for Library_Name use "tokenizer";

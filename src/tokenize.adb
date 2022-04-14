@@ -1,4 +1,3 @@
-with Ada.Containers.Vectors;
 with Tokenize.Token_Lists;
 package body Tokenize with SPARK_Mode => On is
    use Token_Lists;
