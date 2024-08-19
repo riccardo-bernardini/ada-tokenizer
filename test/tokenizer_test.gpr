@@ -1,4 +1,4 @@
-with "../../tokenizer.gpr";
+with "../simple_tokenizer.gpr";
 
 project Tokenizer_Test is
 
