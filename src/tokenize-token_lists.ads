@@ -7,7 +7,6 @@ package Tokenize.Token_Lists with SPARK_Mode => On  is
 
    function Create (N : List_Length) return Token_List
      with
-       Pre'Class => N <= List_Length'Last,
        Post => Create'Result.Length = 0 and Create'Result.Capacity = N;
 
    function Capacity (Item : Token_List) return Positive;
@@ -17,14 +16,14 @@ package Tokenize.Token_Lists with SPARK_Mode => On  is
 
    procedure Append (List : in out Token_List;
                      What : String)
-     with Pre'Class => List.Length  < List.Capacity,
+     with Pre'Class => Length (List)  < List.Capacity,
      Post => List.Length = List.Length'Old + 1
      and List.Capacity = List.Capacity'Old;
 
    function Element (List : Token_List;
                      N    : Positive)
                      return String
-     with Pre'Class => List.Length >= N;
+     with Pre'Class => Length (List) >= N;
 
 private
    type Token_List (Length : List_Length) is tagged
