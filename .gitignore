@@ -3,3 +3,7 @@ obj/gnatprove/*
 obj/gnatprove
 obj/test_tokenizer
 lib/[^.]*
+/obj/
+/lib/
+/alire/
+/config/

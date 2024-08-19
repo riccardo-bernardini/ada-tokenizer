@@ -1,0 +1,10 @@
+name = "simple_tokenizer"
+description = "A function to emulate \"split\" as implemented in Ruby"
+version = "0.1.0-dev"
+
+authors = ["Riccardo Bernardini"]
+maintainers = ["Riccardo Bernardini <riccardo.bernardini@uniud.it>"]
+maintainers-logins = ["mockturtle"]
+licenses = "MIT OR Apache-2.0 WITH LLVM-exception"
+website = ""
+tags = ["strings", "split", "token", "tokenizer", "parsing"]

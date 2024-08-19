@@ -4,10 +4,9 @@ package Tokenize.Token_Lists with SPARK_Mode => On  is
 
    subtype List_Length is Integer range 1 .. Integer'Last - 1;
 
-
    function Create (N : List_Length) return Token_List
      with
-       Post => Create'Result.Length = 0 and Create'Result.Capacity = N;
+       Post => Create'Result.Length = 0 and then Create'Result.Capacity = N;
 
    function Capacity (Item : Token_List) return Positive;
 
@@ -16,9 +15,10 @@ package Tokenize.Token_Lists with SPARK_Mode => On  is
 
    procedure Append (List : in out Token_List;
                      What : String)
-     with Pre'Class => Length (List)  < List.Capacity,
-     Post => List.Length = List.Length'Old + 1
-     and List.Capacity = List.Capacity'Old;
+     with
+       Pre'Class => Length (List)  < List.Capacity,
+       Post => List.Length = List.Length'Old + 1
+       and then List.Capacity = List'Old.Capacity;
 
    function Element (List : Token_List;
                      N    : Positive)
@@ -28,12 +28,12 @@ package Tokenize.Token_Lists with SPARK_Mode => On  is
 private
    type Token_List (Length : List_Length) is tagged
       record
-         Tokens     : Token_Array (1 .. Length) := (others => Null_Unbounded_String);
+         Tokens     : Token_Array (1 .. Length) :=
+                        (others => Null_Unbounded_String);
          First_Free : Positive := 1;
       end record
      with Predicate => Token_List.First_Free <= Integer (Token_List.Length) + 1
-     and Token_List.Tokens'Length = Token_List.Length;
-
+     and then Token_List.Tokens'Length = Token_List.Length;
 
    function Create (N : List_Length) return Token_List
    is (Token_List'(Length     => N,
