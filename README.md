@@ -1,4 +1,4 @@
-# ada-tokenizer
+# Tokenizer
 Small Ada package with functions "Ruby split"-like.  This has been also a "gym" to try to use SPARK.
 
 Package `Tokenize` exports mainly a function
