@@ -1,4 +1,4 @@
-[![Alire](https://img.shields.io/endpoint?url=https://alire.ada.dev/badges/simple_tokenizer.json)](https://alire.ada.dev/crates/simple_tokenizer.html)
+[![Alire](https://img.shields.io/endpoint?url=https://alire.ada.dev/badges/splitter.json)](https://alire.ada.dev/crates/splitter.html)
 # Tokenizer
 Small Ada package with functions "Ruby split"-like.  This has been also a "gym" to try to use SPARK.
 
