@@ -1,6 +1,6 @@
 name = "simple_tokenizer"
 description = "A function to emulate \"split\" as implemented in Ruby"
-version = "1.0.1-dev"
+version = "1.0.1"
 
 authors = ["Riccardo Bernardini"]
 maintainers = ["Riccardo Bernardini <riccardo.bernardini@uniud.it>"]
