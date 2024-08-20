@@ -1,5 +1,5 @@
 with "config/simple_tokenizer_config.gpr";
-project Simple_Tokenizer is
+project Splitter is
 
    for Library_Name use "Simple_Tokenizer";
    for Library_Version use Project'Library_Name & ".so." & Simple_Tokenizer_Config.Crate_Version;
@@ -26,4 +26,4 @@ project Simple_Tokenizer is
       for Artifacts (".") use ("share");
    end Install;
 
-end Simple_Tokenizer;
+end Splitter;

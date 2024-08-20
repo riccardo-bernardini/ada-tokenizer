@@ -1,4 +1,4 @@
-name = "simple_tokenizer"
+name = "splitter"
 description = "A function to emulate \"split\" as implemented in Ruby"
 version = "1.0.1"
 

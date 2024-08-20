@@ -1,10 +1,10 @@
-with "../simple_tokenizer.gpr";
+with "../splitter.gpr";
 
-project Tokenizer_Test is
+project Splitter_Test is
 
    for Source_Dirs use ("src");
    for Object_Dir use "obj";
    for Main use ("test_tokenizer.adb");
 
-end Tokenizer_Test;
+end Splitter_Test;
 
